@@ -13,6 +13,7 @@ import (
 const verifyURL = "https://www.google.com/recaptcha/api/siteverify"
 
 type recaptchaValidator struct {
+	client    *http.Client
 	secretKey string
 	debug     bool
 }
@@ -30,7 +31,7 @@ func (r *recaptchaValidator) ValidateRequest(req *http.Request) error {
 		"secret":   {r.secretKey},
 		"response": {token},
 	}
-	resp, err := http.PostForm(verifyURL, params)
+	resp, err := r.client.PostForm(verifyURL, params)
 	if err != nil {
 		return err
 	}
@@ -47,8 +48,9 @@ func (r *recaptchaValidator) ValidateRequest(req *http.Request) error {
 }
 
 // NewRecaptchaValidator returns a validator for recaptcha response validation.
-func NewRecaptchaValidator(secretKey string, debugMode bool) *recaptchaValidator {
+func NewRecaptchaValidator(client *http.Client, secretKey string, debugMode bool) *recaptchaValidator {
 	return &recaptchaValidator{
+		client:    client,
 		secretKey: secretKey,
 		debug:     debugMode,
 	}
