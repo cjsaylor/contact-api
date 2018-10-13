@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  app:
+    image: cjsaylor/contact-api
+    environment:
+      - VIRTUAL_HOST=contact.bluetrailstech.com
+    env_file: .env
+    networks:
+      - public-nw
+
+networks:
+  public-nw:
+    external:
+      name: public-nw
