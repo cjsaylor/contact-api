@@ -31,7 +31,8 @@ func main() {
 			transport = email.NewMailGunTransport(config.TargetRecipient, client)
 		}
 		if config.RecaptchaSecretKey != "" {
-			validator = security.NewRecaptchaValidator(config.RecaptchaSecretKey, config.TestMode)
+			client := http.DefaultClient
+			validator = security.NewRecaptchaValidator(client, config.RecaptchaSecretKey, config.TestMode)
 		}
 	}
 	mux := http.NewServeMux()
