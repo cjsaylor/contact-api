@@ -21,19 +21,19 @@ func main() {
 	}
 	var transport email.Provider
 	var validator security.RequestValidator
-	if config.TestMode {
-		transport = email.NewNullTransport()
-		validator = security.NewNullValidator()
-		log.Printf("Testmode: ENGAGED")
+	if config.MailgunPrivateKey != "" && !config.TestMode {
+		client := mailgun.NewMailgun(config.MailgunDomain, config.MailgunPrivateKey, "")
+		transport = email.NewMailGunTransport(config.TargetRecipient, client)
 	} else {
-		if config.MailgunPrivateKey != "" {
-			client := mailgun.NewMailgun(config.MailgunDomain, config.MailgunPrivateKey, "")
-			transport = email.NewMailGunTransport(config.TargetRecipient, client)
-		}
-		if config.RecaptchaSecretKey != "" {
-			client := http.DefaultClient
-			validator = security.NewRecaptchaValidator(client, config.RecaptchaSecretKey, config.TestMode)
-		}
+		transport = email.NewNullTransport()
+		log.Println("Null email transport initialized. Not sending emails.")
+	}
+	if config.RecaptchaSecretKey != "" && !config.TestMode {
+		client := http.DefaultClient
+		validator = security.NewRecaptchaValidator(client, config.RecaptchaSecretKey, config.TestMode)
+	} else {
+		validator = security.NewNullValidator()
+		log.Println("Null security validator initialized. Not validating tokens.")
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/contact", controller.NewContactHTTPHandler(transport, validator))
